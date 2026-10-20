@@ -1,0 +1,2325 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Let's Play | Pixel Garden</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;600;700&family=Press+Start+2P&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root { --pixel-ink: #20263e; }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    body {
+      background: #83d7e7;
+    }
+
+    button { font: inherit; }
+
+    .app {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      isolation: isolate;
+      image-rendering: pixelated;
+    }
+
+    .screen {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      opacity: 0;
+      visibility: hidden;
+      transform: scale(1.02);
+      transition: opacity .55s ease, transform .55s steps(5), visibility 0s linear .55s;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: 100% 100%;
+    }
+
+    .screen.is-active {
+      pointer-events: auto;
+      opacity: 1;
+      visibility: visible;
+      transform: scale(1);
+      transition-delay: 0s;
+    }
+
+    #screen-opening {
+      display: grid;
+      place-items: center;
+      background: linear-gradient(180deg, #f9e8f2 0%, #e2e5f6 38%, #a6d5f4 65%, #31afea 100%);
+    }
+
+    .opening-sparkles {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .opening-sparkles i {
+      position: absolute;
+      width: 5px;
+      height: 5px;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(255,255,255,.16);
+      animation: opening-twinkle 3.5s steps(2) infinite;
+    }
+
+    .opening-sparkles i::before,
+    .opening-sparkles i::after {
+      content: "";
+      position: absolute;
+      background: #fff;
+    }
+
+    .opening-sparkles i::before { left: -8px; top: 2px; width: 21px; height: 2px; }
+    .opening-sparkles i::after { left: 2px; top: -8px; width: 2px; height: 21px; }
+    .opening-sparkles i:nth-child(1) { left: 13%; top: 20%; }
+    .opening-sparkles i:nth-child(2) { left: 82%; top: 18%; animation-delay: -.8s; }
+    .opening-sparkles i:nth-child(3) { left: 23%; top: 76%; animation-delay: -1.6s; }
+    .opening-sparkles i:nth-child(4) { left: 88%; top: 70%; animation-delay: -2.3s; }
+
+    .opening-content {
+      position: relative;
+      z-index: 2;
+      width: min(920px, 88vw);
+      padding: clamp(22px, 3vw, 42px);
+      text-align: center;
+      background: rgba(255, 250, 239, .92);
+      border: clamp(5px, .5vw, 8px) solid #20263e;
+      box-shadow: 8px 8px 0 rgba(32, 38, 62, .75), inset 0 0 0 4px #f6cf71;
+      clip-path: polygon(1.5% 0, 98.5% 0, 100% 3%, 100% 97%, 98.5% 100%, 1.5% 100%, 0 97%, 0 3%);
+      animation: opening-enter .7s ease-out forwards;
+    }
+
+    .opening-message {
+      max-width: 780px;
+      margin: 0 auto 24px;
+      color: #20263e;
+      font: 700 clamp(16px, 2vw, 27px)/1.45 "Silkscreen", "Press Start 2P", monospace;
+    }
+
+    .opening-video {
+      display: block;
+      width: min(560px, 100%);
+      aspect-ratio: 560 / 315;
+      height: auto;
+      margin: 0 auto;
+      border: 5px solid #20263e;
+      box-shadow: 5px 5px 0 #111;
+      image-rendering: pixelated;
+    }
+
+    .opening-next {
+      position: absolute;
+      right: 4%;
+      bottom: 4%;
+      z-index: 3;
+      padding: .8em 1.3em;
+      color: #fff;
+      background: #20263e;
+      border: 3px solid #fffde5;
+      box-shadow: 4px 4px 0 #111;
+      cursor: pointer;
+      font: clamp(9px, 1vw, 14px) "Press Start 2P", monospace;
+    }
+
+    .opening-next:hover,
+    .opening-next:focus-visible {
+      background: #426a9d;
+      transform: translateY(-3px);
+      outline: none;
+    }
+
+    @keyframes opening-twinkle { 50% { opacity: .28; transform: scale(.6); } }
+    @keyframes opening-enter { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+
+    #screen-1 {
+      background-color: #83d7e7;
+      background-image: url("screen1.png");
+    }
+
+    #screen-2 {
+      background-color: #72c8f0;
+      background-image: url("screen2.png");
+    }
+
+    #screen-3 {
+      display: grid;
+      place-items: center;
+      background-color: #5bbaf0;
+      background-image: url("page3.png");
+    }
+
+    .page-three-placeholder {
+      padding: 2rem;
+      color: #fffde5;
+      font: clamp(9px, 1.4vw, 16px)/1.8 "Press Start 2P", monospace;
+      text-align: center;
+      text-shadow: 3px 3px 0 #20263e;
+    }
+
+    #screen-4 {
+      background: linear-gradient(180deg, #f9e8f2 0%, #e2e5f6 35%, #a6d5f4 62%, #31afea 100%);
+    }
+
+    .page-four-placeholder {
+      padding: 2rem;
+      color: #fffde5;
+      font: clamp(10px, 1.5vw, 18px)/1.8 "Press Start 2P", monospace;
+      text-align: center;
+      text-shadow: 3px 3px 0 #20263e;
+    }
+
+    #screen-5 {
+      background: linear-gradient(180deg, #f9e8f2 0%, #e2e5f6 35%, #a6d5f4 63%, #31afea 100%);
+      background-image: url("page5-background.png");
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: 100% 100%;
+      image-rendering: pixelated;
+    }
+
+    #screen-6 {
+      background: linear-gradient(180deg, #f9e8f2 0%, #dce5f7 42%, #39afe8 100%);
+      image-rendering: pixelated;
+    }
+
+    #screen-7 {
+      background: linear-gradient(180deg, #f8eaf3 0%, #dfe8f8 37%, #a8d6f5 63%, #35b4ec 100%);
+      image-rendering: pixelated;
+    }
+
+    .page-seven-scene {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      image-rendering: pixelated;
+    }
+
+    .page-seven-cloud {
+      position: absolute;
+      z-index: 1;
+      width: clamp(150px, 22vw, 300px);
+      height: clamp(34px, 5vw, 70px);
+      background: #e7f1ff;
+      border: clamp(4px, .45vw, 7px) solid #9b9ce2;
+      box-shadow: inset 0 -10px #c8d5f4, 8px 8px 0 rgba(108, 119, 186, .2);
+      clip-path: polygon(0 58%, 7% 58%, 7% 33%, 17% 33%, 17% 12%, 29% 12%, 29% 0, 42% 0, 42% 20%, 54% 20%, 54% 7%, 69% 7%, 69% 29%, 83% 29%, 83% 48%, 100% 48%, 100% 100%, 0 100%);
+    }
+
+    .page-seven-cloud--left {
+      left: -2%;
+      top: 25%;
+      animation: page-seven-cloud-left 28s linear infinite;
+    }
+
+    .page-seven-cloud--right {
+      right: -3%;
+      top: 10%;
+      transform: scale(.82);
+      animation: page-seven-cloud-right 36s linear infinite;
+    }
+
+    .page-seven-stars {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .page-seven-stars i {
+      position: absolute;
+      width: 5px;
+      height: 5px;
+      background: #fff;
+      box-shadow: 0 0 0 2px rgba(255,255,255,.15);
+      animation: page-seven-twinkle 3.8s steps(2) infinite;
+    }
+
+    .page-seven-stars i::before,
+    .page-seven-stars i::after {
+      content: "";
+      position: absolute;
+      background: #fff;
+    }
+
+    .page-seven-stars i::before { left: -8px; top: 2px; width: 21px; height: 2px; }
+    .page-seven-stars i::after { left: 2px; top: -8px; width: 2px; height: 21px; }
+    .page-seven-stars i:nth-child(1) { left: 28%; top: 39%; }
+    .page-seven-stars i:nth-child(2) { left: 48%; top: 58%; animation-delay: -1.1s; }
+    .page-seven-stars i:nth-child(3) { left: 76%; top: 42%; animation-delay: -2s; }
+    .page-seven-stars i:nth-child(4) { left: 91%; top: 24%; animation-delay: -2.7s; }
+    .page-seven-stars i:nth-child(5) { left: 38%; top: 72%; animation-delay: -.5s; }
+    .page-seven-stars i:nth-child(6) { left: 18%; top: 52%; animation-delay: -1.8s; }
+
+    .page-seven-title {
+      position: absolute;
+      z-index: 4;
+      top: 18%;
+      left: 50%;
+      width: 60%;
+      margin: 0;
+      color: #050505;
+      text-align: center;
+      font: 700 clamp(48px, 9vw, 138px)/.9 "Silkscreen", "Press Start 2P", monospace;
+      letter-spacing: .02em;
+      text-shadow: 5px 5px 0 rgba(255,255,255,.22);
+      transform: translateX(-50%) translateY(20px);
+      opacity: 0;
+    }
+
+    .is-active .page-seven-title {
+      animation: page-seven-title-enter .8s steps(5) .2s forwards, page-seven-title-float 4.2s ease-in-out 1.2s infinite;
+    }
+
+    .page-seven-title span {
+      display: block;
+    }
+
+    .page-seven-ground {
+      position: absolute;
+      z-index: 3;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 22%;
+      background:
+        repeating-linear-gradient(90deg, #ff74c8 0 12px, #e744a9 12px 25px, #8d3fb3 25px 33px, #f36aaf 33px 45px),
+        #e744a9;
+      border-top: 8px solid #f6a2d5;
+      box-shadow: inset 0 15px #24df86, inset 0 24px #087d52;
+      image-rendering: pixelated;
+    }
+
+    .page-seven-grass {
+      position: absolute;
+      z-index: 4;
+      left: 0;
+      right: 0;
+      bottom: 20%;
+      height: 7%;
+      background:
+        repeating-linear-gradient(90deg, #0ba96d 0 13px, #28f08a 13px 25px, #f37bc5 25px 33px, #11cd77 33px 44px);
+      clip-path: polygon(0 45%, 4% 45%, 4% 0, 7% 0, 7% 48%, 12% 48%, 12% 18%, 15% 18%, 15% 55%, 20% 55%, 20% 0, 23% 0, 23% 45%, 29% 45%, 29% 20%, 32% 20%, 32% 48%, 38% 48%, 38% 0, 41% 0, 41% 50%, 47% 50%, 47% 16%, 50% 16%, 50% 52%, 57% 52%, 57% 0, 60% 0, 60% 45%, 67% 45%, 67% 20%, 70% 20%, 70% 52%, 76% 52%, 76% 0, 79% 0, 79% 44%, 85% 44%, 85% 17%, 88% 17%, 88% 50%, 94% 50%, 94% 0, 97% 0, 97% 45%, 100% 45%, 100% 100%, 0 100%);
+      image-rendering: pixelated;
+    }
+
+    .page-seven-mascot {
+      position: absolute;
+      z-index: 5;
+      left: 6%;
+      bottom: 17%;
+      width: clamp(150px, 22vw, 300px);
+      height: clamp(122px, 19vw, 250px);
+      opacity: 0;
+      transform: translateX(-120%) translateY(10px);
+    }
+
+    .page-seven-mascot img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      image-rendering: pixelated;
+    }
+
+    .is-active .page-seven-mascot {
+      animation: page-seven-mascot-enter .9s cubic-bezier(.2,.8,.25,1) .35s forwards, page-seven-mascot-idle 3.2s ease-in-out 1.35s infinite;
+    }
+
+    .page-seven-nav {
+      position: absolute;
+      z-index: 7;
+      left: 4%;
+      right: 4%;
+      bottom: 3%;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .page-seven-nav button {
+      padding: .8em 1.3em;
+      color: #fff;
+      background: #20263e;
+      border: 3px solid #fffde5;
+      box-shadow: 4px 4px 0 #111;
+      cursor: pointer;
+      font: clamp(9px, 1vw, 14px) "Press Start 2P", monospace;
+    }
+
+    .page-seven-nav button:hover,
+    .page-seven-nav button:focus-visible {
+      background: #426a9d;
+      transform: translateY(-3px);
+      outline: none;
+    }
+
+    @keyframes page-seven-cloud-left { 50% { transform: translateX(10vw); } }
+    @keyframes page-seven-cloud-right { 50% { transform: translateX(-12vw) scale(.82); } }
+    @keyframes page-seven-twinkle { 50% { opacity: .3; transform: scale(.6); } }
+    @keyframes page-seven-title-enter { to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+    @keyframes page-seven-title-float { 50% { transform: translateX(-50%) translateY(-7px); } }
+    @keyframes page-seven-mascot-enter { 65% { opacity: 1; transform: translateX(12px) translateY(-12px) scaleY(1.05); } to { opacity: 1; transform: translateX(0) translateY(0) scaleY(1); } }
+    @keyframes page-seven-mascot-idle { 0%, 100% { transform: translateY(0) scaleY(1); } 45% { transform: translateY(-8px) scaleY(1.04); } 70% { transform: translateY(1px) scaleY(.97); } }
+
+    #screen-8 {
+      background: linear-gradient(180deg, #f9eaf4 0%, #dce7f8 40%, #54b9ed 100%);
+      image-rendering: pixelated;
+    }
+
+    .page-eight-scene {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      image-rendering: pixelated;
+    }
+
+    .page-eight-cloud {
+      position: absolute;
+      z-index: 1;
+      width: clamp(170px, 24vw, 330px);
+      height: clamp(38px, 5vw, 70px);
+      background: #eaf5ff;
+      border: clamp(4px, .45vw, 7px) solid #9699e1;
+      box-shadow: inset 0 -10px #c9d9f5;
+      clip-path: polygon(0 58%, 8% 58%, 8% 31%, 19% 31%, 19% 10%, 32% 10%, 32% 0, 45% 0, 45% 21%, 56% 21%, 56% 7%, 70% 7%, 70% 29%, 84% 29%, 84% 48%, 100% 48%, 100% 100%, 0 100%);
+      animation: page-eight-cloud-drift 34s linear infinite;
+    }
+
+    .page-eight-cloud--left { left: -3%; top: 29%; }
+    .page-eight-cloud--right { right: -3%; top: 13%; transform: scale(.8); animation-duration: 42s; animation-direction: reverse; }
+
+    .page-eight-stars {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .page-eight-stars i {
+      position: absolute;
+      width: 5px;
+      height: 5px;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(255,255,255,.16);
+      animation: page-eight-twinkle 3.5s steps(2) infinite;
+    }
+
+    .page-eight-stars i::before,
+    .page-eight-stars i::after {
+      content: "";
+      position: absolute;
+      background: #fff;
+    }
+
+    .page-eight-stars i::before { left: -8px; top: 2px; width: 21px; height: 2px; }
+    .page-eight-stars i::after { left: 2px; top: -8px; width: 2px; height: 21px; }
+    .page-eight-stars i:nth-child(1) { left: 28%; top: 40%; }
+    .page-eight-stars i:nth-child(2) { left: 69%; top: 36%; animation-delay: -.8s; }
+    .page-eight-stars i:nth-child(3) { left: 86%; top: 56%; animation-delay: -1.7s; }
+    .page-eight-stars i:nth-child(4) { left: 7%; top: 68%; animation-delay: -2.4s; }
+    .page-eight-stars i:nth-child(5) { left: 43%; top: 65%; animation-delay: -1.2s; }
+
+    .page-eight-orb {
+      width: min(30vw, 240px);
+      max-width: 240px;
+      max-height: 240px;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: radial-gradient(circle at 34% 27%, #fff 0 12%, #f4f4f4 42%, #d0d0d0 100%);
+      border: 2px solid rgba(110,110,110,.3);
+      box-shadow: inset -20px -22px 30px rgba(100,100,100,.18), inset 20px 18px 35px rgba(255,255,255,.92), 0 8px 15px rgba(45,62,93,.22);
+      transition: background .18s steps(3), box-shadow .18s steps(3);
+      flex: 0 0 auto;
+    }
+
+    .page-eight-orb.is-flashing {
+      animation: page-eight-flash .55s steps(2) infinite;
+    }
+
+    .page-eight-orb.is-red {
+      background: radial-gradient(circle at 34% 27%, #ffb5bc 0 12%, #ef4a59 44%, #a21935 100%);
+      box-shadow: inset -20px -22px 30px rgba(92,0,19,.25), inset 20px 18px 35px rgba(255,220,220,.7), 0 0 38px 12px rgba(255,56,72,.68);
+    }
+
+    .page-eight-orb.is-green {
+      background: radial-gradient(circle at 34% 27%, #caffdb 0 12%, #45dc87 44%, #12844f 100%);
+      box-shadow: inset -20px -22px 30px rgba(0,71,37,.25), inset 20px 18px 35px rgba(230,255,237,.7), 0 0 38px 12px rgba(54,235,135,.62);
+    }
+
+    .page-eight-orb.is-yellow {
+      background: radial-gradient(circle at 34% 27%, #fff8b5 0 12%, #f5d34c 44%, #a87816 100%);
+      box-shadow: inset -20px -22px 30px rgba(102,72,0,.25), inset 20px 18px 35px rgba(255,255,220,.8), 0 0 34px 10px rgba(255,218,71,.72);
+    }
+
+    .page-eight-label {
+      margin: 0;
+      color: #050505;
+      font: 700 clamp(25px, 4vw, 58px) "Silkscreen", "Press Start 2P", monospace;
+      letter-spacing: .04em;
+      line-height: 1.15;
+      white-space: nowrap;
+      visibility: hidden;
+      flex: 0 0 auto;
+    }
+
+    .page-eight-label.is-visible {
+      visibility: visible;
+    }
+
+    .page-eight-continue {
+      visibility: hidden;
+      flex: 0 0 auto;
+    }
+
+    .page-eight-continue.is-visible {
+      visibility: visible;
+    }
+
+    .page-eight-ground {
+      position: absolute;
+      z-index: 2;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 18%;
+      background: repeating-linear-gradient(90deg, #ff74c8 0 13px, #df43aa 13px 26px, #9b3bb2 26px 34px, #f26db1 34px 47px);
+      border-top: 8px solid #f5a4d7;
+      box-shadow: inset 0 15px #22e389, inset 0 24px #087d52;
+    }
+
+    .page-eight-grass {
+      position: absolute;
+      z-index: 1;
+      left: 0;
+      right: 0;
+      bottom: 16%;
+      height: 7%;
+      background: repeating-linear-gradient(90deg, #0ba96d 0 14px, #27f18b 14px 26px, #f37bc5 26px 35px, #11ce78 35px 46px);
+      clip-path: polygon(0 44%, 5% 44%, 5% 0, 8% 0, 8% 45%, 14% 45%, 14% 16%, 17% 16%, 17% 48%, 24% 48%, 24% 0, 27% 0, 27% 48%, 35% 48%, 35% 18%, 38% 18%, 38% 45%, 46% 45%, 46% 0, 49% 0, 49% 45%, 57% 45%, 57% 14%, 60% 14%, 60% 48%, 68% 48%, 68% 0, 71% 0, 71% 45%, 79% 45%, 79% 16%, 82% 16%, 82% 48%, 90% 48%, 90% 0, 93% 0, 93% 45%, 100% 45%, 100% 100%, 0 100%);
+    }
+
+    .page-eight-ground {
+      z-index: 1;
+    }
+
+    .page-eight-ui {
+      position: absolute;
+      z-index: 10;
+      inset: 8% 0 20%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      pointer-events: none;
+    }
+
+    .page-eight-ui > * {
+      pointer-events: auto;
+    }
+
+    .page-eight-modal {
+      position: absolute;
+      z-index: 10;
+      top: 50%;
+      left: 50%;
+      width: min(720px, 86vw);
+      padding: clamp(20px, 3vw, 40px);
+      color: #fffde5;
+      text-align: center;
+      background: rgba(32, 38, 62, .96);
+      border: clamp(5px, .5vw, 8px) solid #fff01f;
+      box-shadow: 8px 8px 0 #111, inset 0 0 0 4px #69738e;
+      transform: translate(-50%, -50%);
+    }
+
+    .page-eight-modal[hidden] { display: none; }
+
+    .page-eight-modal h2 {
+      margin: 0 0 22px;
+      color: #fff01f;
+      font: 700 clamp(20px, 2.5vw, 34px)/1.25 "Silkscreen", "Press Start 2P", monospace;
+    }
+
+    .page-eight-modal p {
+      margin: 0 0 20px;
+      font: 600 clamp(13px, 1.45vw, 21px)/1.5 "Silkscreen", "Press Start 2P", monospace;
+    }
+
+    .page-eight-actions,
+    .page-eight-question-modes,
+    .page-eight-manual-actions,
+    .page-eight-quiz-options,
+    .page-eight-quiz-nav {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .page-eight-button {
+      padding: .8em 1em;
+      color: #fff;
+      background: #426a9d;
+      border: 3px solid #fffde5;
+      box-shadow: 4px 4px 0 #111;
+      cursor: pointer;
+      font: clamp(9px, 1vw, 14px) "Press Start 2P", monospace;
+    }
+
+    .page-eight-button:hover,
+    .page-eight-button:focus-visible {
+      background: #d8499f;
+      transform: translateY(-3px);
+      outline: none;
+    }
+
+    .page-eight-quiz-question {
+      margin: 0 auto 24px !important;
+      max-width: 96%;
+      color: #fff;
+      padding: 0 2%;
+      font-size: clamp(26px, 2.8vw, 38px) !important;
+      line-height: 1.4 !important;
+      letter-spacing: .02em;
+    }
+
+    .page-eight-question-modes .page-eight-button {
+      max-width: fit-content;
+      padding: 4px 8px;
+      color: #d9e3f3;
+      background: rgba(50, 67, 94, .82);
+      border: 2px solid #8998b2;
+      box-shadow: 2px 2px 0 rgba(10, 14, 27, .85);
+      font-size: 11px;
+      line-height: 1.2;
+      opacity: .88;
+    }
+
+    .page-eight-question-modes {
+      flex-wrap: nowrap;
+      justify-content: center;
+    }
+
+    .page-eight-quiz-nav {
+      justify-content: center;
+    }
+
+    .page-eight-question-modes {
+      justify-content: flex-end;
+      gap: 8px;
+      margin: 4px 0 16px;
+    }
+
+    .page-eight-question-modes[hidden],
+    .page-eight-manual-actions[hidden] {
+      display: none;
+    }
+
+    .page-eight-manual-actions .page-eight-button {
+      min-width: 180px;
+      font-size: clamp(11px, 1.35vw, 18px);
+    }
+
+    .page-eight-quiz-options .page-eight-button {
+      flex: 1 1 42%;
+      min-width: 190px;
+      text-align: left;
+    }
+
+    .page-eight-feedback {
+      min-height: 2em;
+      margin: 18px 0 8px !important;
+      color: #72f29a;
+    }
+
+    .page-eight-feedback.is-wrong { color: #ff858c; }
+
+    .page-eight-nav {
+      position: absolute;
+      z-index: 12;
+      left: 4%;
+      right: 4%;
+      bottom: 3%;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    @keyframes page-eight-cloud-drift { 50% { translate: 12vw 0; } }
+    @keyframes page-eight-twinkle { 50% { opacity: .28; transform: scale(.6); } }
+    @keyframes page-eight-flash { 0%, 100% { filter: saturate(1); } 50% { filter: saturate(1.9) brightness(1.15); } }
+
+    .page-six-scene {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      image-rendering: pixelated;
+    }
+
+    .page-six-sparkles {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .page-six-sparkles i {
+      position: absolute;
+      width: 5px;
+      height: 5px;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(255,255,255,.18);
+      animation: page-six-twinkle 3.2s steps(2) infinite;
+    }
+
+    .page-six-sparkles i::before,
+    .page-six-sparkles i::after {
+      content: "";
+      position: absolute;
+      background: #fff;
+    }
+
+    .page-six-sparkles i::before { left: -8px; top: 2px; width: 21px; height: 2px; }
+    .page-six-sparkles i::after { left: 2px; top: -8px; width: 2px; height: 21px; }
+    .page-six-sparkles i:nth-child(1) { left: 28%; top: 39%; }
+    .page-six-sparkles i:nth-child(2) { left: 57%; top: 58%; animation-delay: -.8s; }
+    .page-six-sparkles i:nth-child(3) { right: 5%; top: 24%; animation-delay: -1.6s; }
+    .page-six-sparkles i:nth-child(4) { right: 22%; top: 68%; animation-delay: -2.2s; }
+    .page-six-sparkles i:nth-child(5) { left: 13%; top: 77%; animation-delay: -1.1s; }
+
+    .page-six-card {
+      position: absolute;
+      z-index: 2;
+      top: 7%;
+      left: 3%;
+      right: 3%;
+      bottom: 11%;
+      padding: 2.2% 3% 2%;
+      color: #fffde5;
+      background: rgba(18, 24, 41, .87);
+      border: clamp(5px, .45vw, 8px) solid #fff01f;
+      box-shadow: 8px 8px 0 #111, inset 0 0 0 4px #59627d;
+      clip-path: polygon(1.5% 0, 98.5% 0, 100% 3%, 100% 97%, 98.5% 100%, 1.5% 100%, 0 97%, 0 3%);
+      opacity: 0;
+      transform: translateY(18px);
+    }
+
+    .is-active .page-six-card {
+      animation: page-six-card-enter .6s ease-out .1s forwards;
+    }
+
+    .page-six-title {
+      margin: 0 0 1.8%;
+      color: #fff01f;
+      font: 700 clamp(19px, 2.25vw, 34px)/1.2 "Silkscreen", "Press Start 2P", monospace;
+      text-shadow: 3px 3px 0 #05070e;
+    }
+
+    .page-six-rules {
+      display: grid;
+      gap: clamp(7px, .9vh, 13px);
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      font: 600 clamp(13px, 1.42vw, 22px)/1.25 "Silkscreen", "Press Start 2P", monospace;
+    }
+
+    .page-six-rule {
+      opacity: 0;
+      transform: translateX(-14px);
+    }
+
+    .is-active .page-six-rule {
+      animation: page-six-line-enter .35s ease-out forwards;
+    }
+
+    .page-six-rule:nth-child(1) { animation-delay: .45s; }
+    .page-six-rule:nth-child(2) { animation-delay: .65s; }
+    .page-six-rule:nth-child(3) { animation-delay: .85s; }
+    .page-six-rule:nth-child(4) { animation-delay: 1.05s; }
+    .page-six-rule:nth-child(5) { animation-delay: 1.25s; }
+    .page-six-rule:nth-child(6) { animation-delay: 1.45s; }
+    .page-six-rule:nth-child(7) { animation-delay: 1.65s; }
+
+    .page-six-number {
+      color: #fff01f;
+    }
+
+    .page-six-red {
+      color: #ff5a61;
+      text-shadow: 2px 2px 0 #5c1824;
+    }
+
+    .page-six-green {
+      color: #72f29a;
+      text-shadow: 2px 2px 0 #164c39;
+    }
+
+    .page-six-footer {
+      margin: 1.8% 0 0;
+      color: #fff;
+      font: 600 clamp(12px, 1.35vw, 20px)/1.3 "Silkscreen", "Press Start 2P", monospace;
+      opacity: 0;
+    }
+
+    .is-active .page-six-footer {
+      animation: page-six-line-enter .4s ease-out 1.95s forwards;
+    }
+
+    .page-six-signal {
+      position: absolute;
+      z-index: 4;
+      right: 5%;
+      top: 9%;
+      width: 42px;
+      padding: 12px 8px;
+      background: #111827;
+      border: 4px solid #fffde5;
+      box-shadow: 5px 5px 0 #111;
+      animation: page-six-signal-float 3.6s ease-in-out infinite;
+    }
+
+    .page-six-light {
+      display: block;
+      width: 22px;
+      height: 22px;
+      margin: 6px auto;
+      border: 3px solid #05070e;
+      border-radius: 50%;
+    }
+
+    .page-six-light--red { background: #f04452; animation: page-six-red-pulse 2.2s ease-in-out infinite; }
+    .page-six-light--yellow { background: #f4d34f; opacity: .5; }
+    .page-six-light--green { background: #45e88b; animation: page-six-green-pulse 2.2s ease-in-out 1.1s infinite; }
+
+    .page-six-grass {
+      position: absolute;
+      z-index: 3;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 8%;
+      background:
+        repeating-linear-gradient(90deg, #087d52 0 12px, #0ba96d 12px 22px, #d85dc2 22px 28px, #087d52 28px 40px),
+        #087d52;
+      border-top: 6px solid #063f38;
+      image-rendering: pixelated;
+    }
+
+    .page-six-nav {
+      position: absolute;
+      z-index: 6;
+      left: 4%;
+      right: 4%;
+      bottom: 3%;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .page-six-nav button,
+    .page-five-next {
+      padding: .8em 1.3em;
+      color: #fff;
+      background: #20263e;
+      border: 3px solid #fffde5;
+      box-shadow: 4px 4px 0 #111;
+      cursor: pointer;
+      font: clamp(9px, 1vw, 14px) "Press Start 2P", monospace;
+    }
+
+    .page-six-nav button:hover,
+    .page-six-nav button:focus-visible,
+    .page-five-next:hover,
+    .page-five-next:focus-visible {
+      background: #426a9d;
+      transform: translateY(-3px);
+      outline: none;
+    }
+
+    @keyframes page-six-card-enter { to { opacity: 1; transform: translateY(0); } }
+    @keyframes page-six-line-enter { to { opacity: 1; transform: translateX(0); } }
+    @keyframes page-six-twinkle { 50% { opacity: .3; transform: scale(.65); } }
+    @keyframes page-six-signal-float { 50% { transform: translateY(-5px); } }
+    @keyframes page-six-red-pulse { 50% { box-shadow: 0 0 14px #ff394d; } }
+    @keyframes page-six-green-pulse { 50% { box-shadow: 0 0 14px #45e88b; } }
+
+    .page-five-scene {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      image-rendering: pixelated;
+    }
+
+    #screen-5 .page-five-scene {
+      background: transparent;
+    }
+
+    #screen-5 .page-five-sparkles,
+    #screen-5 .cat-container,
+    #screen-5 .rules-sign {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .page-five-sparkles {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .page-five-sparkles i {
+      position: absolute;
+      width: 5px;
+      height: 5px;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(255,255,255,.14);
+      animation: presentation-twinkle 3.4s steps(2) infinite;
+    }
+
+    .page-five-sparkles i::before,
+    .page-five-sparkles i::after {
+      content: "";
+      position: absolute;
+      background: #fff;
+    }
+
+    .page-five-sparkles i::before { left: -7px; top: 2px; width: 19px; height: 2px; }
+    .page-five-sparkles i::after { left: 2px; top: -7px; width: 2px; height: 19px; }
+    .page-five-sparkles i:nth-child(1) { left: 28%; top: 42%; }
+    .page-five-sparkles i:nth-child(2) { left: 57%; top: 61%; animation-delay: -.8s; }
+    .page-five-sparkles i:nth-child(3) { right: 5%; top: 23%; animation-delay: -1.6s; }
+    .page-five-sparkles i:nth-child(4) { right: 22%; top: 70%; animation-delay: -2.2s; }
+    .page-five-sparkles i:nth-child(5) { left: 12%; top: 77%; animation-delay: -1.1s; }
+
+    .rules-sign {
+      position: absolute;
+      top: 32%;
+      left: 39%;
+      width: 48%;
+      height: 19%;
+      display: grid;
+      place-items: center;
+      color: #050505;
+      background: #bdbdbd;
+      border: clamp(8px, .8vw, 14px) solid #050505;
+      box-shadow: inset 0 12px #e7e7e7, inset 0 -12px #777, 12px 10px 0 rgba(28,28,28,.18);
+      clip-path: polygon(5% 0, 95% 0, 100% 18%, 100% 82%, 95% 100%, 5% 100%, 0 82%, 0 18%);
+      opacity: 0;
+      transform: translateY(18px);
+    }
+
+    .is-active .rules-sign {
+      animation: panel-enter .65s ease-out .12s forwards;
+    }
+
+    .rules-sign h2 {
+      margin: 0;
+      font: 700 clamp(30px, 4vw, 58px) "Silkscreen", "Press Start 2P", monospace;
+      letter-spacing: .02em;
+    }
+
+    .page-five-back {
+      position: absolute;
+      z-index: 6;
+      left: 4%;
+      bottom: 4%;
+      padding: .8em 1.3em;
+      color: #fff;
+      background: #20263e;
+      border: 3px solid #fffde5;
+      box-shadow: 4px 4px 0 #111;
+      cursor: pointer;
+      font: clamp(9px, 1vw, 14px) "Press Start 2P", monospace;
+    }
+
+    .page-five-next {
+      position: absolute;
+      z-index: 6;
+      right: 4%;
+      bottom: 4%;
+    }
+
+    .page-five-back:hover,
+    .page-five-back:focus-visible {
+      background: #426a9d;
+      transform: translateY(-3px);
+      outline: none;
+    }
+
+    .cat-container {
+      position: absolute;
+      left: 11%;
+      bottom: -5%;
+      width: 29%;
+      height: 61%;
+      opacity: 0;
+      transform: translateY(24px);
+      z-index: 2;
+      animation: none;
+    }
+
+    #cat-mascot {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      image-rendering: pixelated;
+    }
+
+    .is-active .cat-container {
+      animation: rabbit-enter .7s ease-out .25s forwards, rules-idle 3.6s ease-in-out 1.2s infinite;
+    }
+
+    .rules-ear,
+    .rules-head,
+    .rules-body,
+    .rules-coat,
+    .rules-limb,
+    .rules-glasses {
+      position: absolute;
+      display: block;
+      image-rendering: pixelated;
+    }
+
+    .rules-ear {
+      top: 0;
+      width: 18%;
+      height: 22%;
+      background: #f0a184;
+      border: 7px solid #332335;
+      box-shadow: inset 7px 0 #ffd08c;
+    }
+
+    .rules-ear--left { left: 15%; transform: rotate(-8deg); }
+    .rules-ear--right { right: 15%; transform: rotate(8deg); }
+
+    .rules-head {
+      left: 12%;
+      right: 12%;
+      top: 9%;
+      height: 35%;
+      background: #ffc75d;
+      border: 8px solid #332335;
+      clip-path: polygon(14% 0, 86% 0, 100% 18%, 95% 88%, 80% 100%, 20% 100%, 5% 88%, 0 18%);
+      box-shadow: inset 15px -8px #e79a35;
+    }
+
+    .rules-hat {
+      position: absolute;
+      z-index: 3;
+      left: 5%;
+      top: 4%;
+      width: 90%;
+      height: 24%;
+      background: #3b2939;
+      border: 8px solid #332335;
+      clip-path: polygon(24% 0, 70% 0, 100% 76%, 92% 100%, 8% 100%, 0 76%);
+      box-shadow: inset 18px -8px #68442f;
+    }
+
+    .rules-glasses {
+      z-index: 4;
+      top: 25%;
+      left: 4%;
+      width: 92%;
+      height: 22%;
+      background:
+        linear-gradient(#111, #111) 0 0 / 47% 100% no-repeat,
+        linear-gradient(#111, #111) 100% 0 / 47% 100% no-repeat;
+      clip-path: polygon(0 0, 43% 0, 48% 20%, 52% 20%, 57% 0, 100% 0, 100% 78%, 90% 100%, 62% 100%, 52% 75%, 48% 75%, 38% 100%, 10% 100%, 0 78%);
+    }
+
+    .rules-glasses::after {
+      content: "";
+      position: absolute;
+      left: 43%;
+      top: 37%;
+      width: 15%;
+      height: 17%;
+      background: #111;
+    }
+
+    .rules-body {
+      left: 22%;
+      right: 22%;
+      top: 41%;
+      bottom: 0;
+      background: #c80018;
+      border: 8px solid #332335;
+      clip-path: polygon(18% 0, 82% 0, 100% 17%, 91% 100%, 9% 100%, 0 17%);
+    }
+
+    .rules-coat {
+      top: 48%;
+      width: 28%;
+      height: 38%;
+      background: #c80018;
+      border: 8px solid #332335;
+    }
+
+    .rules-coat--left { left: 6%; transform: rotate(9deg); }
+    .rules-coat--right { right: 6%; transform: rotate(-9deg); }
+
+    .rules-limb {
+      bottom: 0;
+      width: 17%;
+      height: 26%;
+      background: #f2bd63;
+      border: 8px solid #332335;
+    }
+
+    .rules-limb--left { left: 22%; }
+    .rules-limb--right { right: 22%; }
+
+    @keyframes rules-idle {
+      50% { transform: translateY(-5px); }
+    }
+
+    .page-four-scene {
+      position: absolute;
+      inset: 0;
+      image-rendering: pixelated;
+    }
+
+    .welcome-panel {
+      position: absolute;
+      top: 17.7%;
+      left: 36%;
+      width: 59.5%;
+      height: 67.5%;
+      padding: 4.8% 4.8% 3.5%;
+      box-sizing: border-box;
+      color: #080808;
+      background: #e9e8dc;
+      border: clamp(8px, .75vw, 12px) solid #171717;
+      box-shadow: inset 0 0 0 10px #d8d7ca, 14px 12px 0 rgba(30, 30, 30, .35);
+      clip-path: polygon(4% 0, 96% 0, 100% 7%, 100% 93%, 96% 100%, 4% 100%, 0 93%, 0 7%);
+      display: flex;
+      align-items: center;
+      opacity: 0;
+      transform: translateY(22px);
+    }
+
+    .is-active .welcome-panel {
+      animation: panel-enter .7s ease-out .15s forwards;
+    }
+
+    .welcome-panel::before,
+    .welcome-panel::after {
+      display: none;
+    }
+
+    .panel-accent {
+      position: absolute;
+      z-index: 4;
+      width: 42px;
+      height: 72px;
+      background:
+        linear-gradient(#171717, #171717) center / 16px 100% no-repeat,
+        linear-gradient(#171717, #171717) center / 100% 16px no-repeat,
+        linear-gradient(#fff01f, #fff01f) center / 20px 20px no-repeat;
+      pointer-events: none;
+    }
+
+    .panel-accent--top { top: 10.5%; left: 48.5%; }
+    .panel-accent--bottom { right: 14%; bottom: 8%; }
+
+    .welcome-text {
+      margin: 0;
+      width: 100%;
+      font: 700 clamp(26px, 1.9vw, 34px)/2.12 "Silkscreen", "Press Start 2P", monospace;
+      letter-spacing: -.08em;
+      text-align: center;
+    }
+
+    .welcome-line {
+      display: block;
+      white-space: nowrap;
+      opacity: 0;
+      transform: translateY(12px);
+      transform-origin: center;
+    }
+
+    .is-active .welcome-line {
+      animation: line-enter .45s ease-out forwards;
+    }
+
+    .welcome-line:nth-child(1) { animation-delay: .45s; }
+    .welcome-line:nth-child(2) { animation-delay: .7s; }
+    .welcome-line:nth-child(3) { animation-delay: .95s; }
+    .welcome-line:nth-child(4) { animation-delay: 1.2s; }
+    .welcome-line:nth-child(5) { animation-delay: 1.45s; }
+
+    .welcome-rabbit {
+      position: absolute;
+      left: 19.5%;
+      bottom: -1%;
+      width: 17%;
+      height: 49%;
+      z-index: 2;
+      opacity: 0;
+      transform: translateY(32px);
+    }
+
+    .rabbit-ear,
+    .rabbit-body,
+    .rabbit-face,
+    .rabbit-arm,
+    .rabbit-leg {
+      position: absolute;
+      display: block;
+      background: #ad4f28;
+      border: 8px solid #171717;
+      image-rendering: pixelated;
+    }
+
+    .rabbit-ear {
+      top: 0;
+      width: 27%;
+      height: 29%;
+      background: #b4522b;
+      clip-path: polygon(18% 0, 82% 0, 100% 16%, 100% 88%, 82% 100%, 18% 100%, 0 88%, 0 16%);
+    }
+
+    .rabbit-ear::after {
+      content: "";
+      position: absolute;
+      inset: 20% 21%;
+      background: #f19b83;
+    }
+
+    .rabbit-ear--left { left: 11%; }
+    .rabbit-ear--right { right: 11%; }
+
+    .rabbit-body {
+      left: 7%;
+      right: 7%;
+      top: 23%;
+      bottom: 0;
+      background: #ad4f28;
+      clip-path: polygon(14% 0, 86% 0, 100% 8%, 100% 83%, 86% 91%, 86% 100%, 62% 100%, 62% 91%, 38% 91%, 38% 100%, 14% 100%, 0 91%, 0 8%);
+      box-shadow: inset 20px 0 #c06135, inset -18px -12px #873c20;
+    }
+
+    .rabbit-face {
+      left: 15%;
+      right: 15%;
+      top: 29%;
+      height: 27%;
+      background: #b4522b;
+      border: 0;
+    }
+
+    .rabbit-eye,
+    .rabbit-nose,
+    .rabbit-mouth {
+      position: absolute;
+      display: block;
+      background: #3e302b;
+    }
+
+    .rabbit-eye { top: 31%; width: 10px; height: 10px; }
+    .rabbit-eye--left { left: 20%; }
+    .rabbit-eye--right { right: 20%; }
+    .rabbit-nose { left: 44%; top: 58%; width: 16px; height: 10px; }
+    .rabbit-mouth { left: 48%; top: 70%; width: 10px; height: 7px; }
+
+    .rabbit-arm {
+      top: 57%;
+      width: 25%;
+      height: 24%;
+      background: #b4522b;
+      border-color: #171717;
+    }
+
+    .rabbit-arm--left { left: 0; transform: rotate(8deg); }
+    .rabbit-arm--right { right: 0; transform: rotate(-8deg); }
+
+    .rabbit-leg {
+      bottom: 0;
+      width: 23%;
+      height: 24%;
+      border-bottom: 0;
+    }
+
+    .rabbit-leg--left { left: 18%; }
+    .rabbit-leg--right { right: 18%; }
+
+    .is-active .welcome-rabbit {
+      animation: rabbit-enter .65s ease-out .25s forwards, welcome-breathe 3.2s ease-in-out 1.3s infinite;
+    }
+
+    .page-four-sparkles {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .page-four-sparkles i {
+      position: absolute;
+      width: 5px;
+      height: 5px;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(255,255,255,.15);
+      animation: presentation-twinkle 3s steps(2) infinite;
+    }
+
+    .page-four-sparkles i:nth-child(1) { left: 18%; top: 42%; }
+    .page-four-sparkles i:nth-child(2) { left: 73%; top: 21%; animation-delay: -.9s; }
+    .page-four-sparkles i:nth-child(3) { left: 57%; top: 84%; animation-delay: -1.7s; }
+    .page-four-sparkles i:nth-child(4) { right: 5%; top: 23%; animation-delay: -.4s; }
+
+    .page-four-nav {
+      position: absolute;
+      z-index: 6;
+      bottom: 4%;
+      left: 5%;
+      right: 5%;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .page-four-nav button {
+      padding: .8em 1.3em;
+      color: #fff;
+      background: #20263e;
+      border: 3px solid #fffde5;
+      box-shadow: 4px 4px 0 #111;
+      cursor: pointer;
+      font: clamp(9px, 1vw, 14px) "Press Start 2P", monospace;
+    }
+
+    .page-four-nav button:hover,
+    .page-four-nav button:focus-visible {
+      background: #426a9d;
+      transform: translateY(-3px);
+      outline: none;
+    }
+
+    @keyframes panel-enter { to { opacity: 1; transform: translateY(0); } }
+    @keyframes line-enter { to { opacity: 1; transform: translateY(0); } }
+    @keyframes rabbit-enter { to { opacity: 1; transform: translateY(0); } }
+    @keyframes welcome-breathe {
+      50% { transform: translateY(-4px) scaleY(1.015); }
+    }
+    @keyframes presentation-twinkle {
+      50% { opacity: .25; transform: scale(.65); }
+    }
+
+    .fallback {
+      display: none;
+      position: absolute;
+      inset: 0;
+      place-items: center;
+      padding: 24px;
+      color: white;
+      background: #303b5c;
+      font: 10px/1.8 "Press Start 2P", monospace;
+      text-align: center;
+    }
+
+    .screen--missing .fallback { display: grid; }
+
+    .overlay-button {
+      position: absolute;
+      z-index: 5;
+      padding: 0;
+      cursor: pointer;
+      color: transparent;
+      background: transparent;
+      border: 2px solid transparent;
+      transition: background-color .12s steps(2), border-color .12s steps(2), box-shadow .12s steps(2), transform .12s steps(2);
+    }
+
+    .overlay-button:hover,
+    .overlay-button:focus-visible {
+      background: rgba(255, 244, 190, .3);
+      border-color: #fffde4;
+      box-shadow: 0 0 0 3px rgba(32, 38, 62, .45), 0 0 14px rgba(255, 239, 160, .85);
+      outline: none;
+      transform: scale(1.035);
+    }
+
+    .overlay-button:active {
+      transform: scale(.97);
+      box-shadow: inset 3px 3px rgba(32, 38, 62, .25);
+    }
+
+    /* A lightweight pixel pointer appears without baking a cursor into screen2.png. */
+    .overlay-button::after {
+      content: "▶";
+      position: absolute;
+      right: -18px;
+      top: 50%;
+      opacity: 0;
+      color: #fffde4;
+      font: 14px/1 monospace;
+      text-shadow: 2px 2px 0 var(--pixel-ink);
+      transform: translateY(-50%);
+      transition: opacity .12s steps(2);
+      pointer-events: none;
+    }
+
+    .overlay-button:hover::after,
+    .overlay-button:focus-visible::after { opacity: 1; }
+
+    .start-button {
+      left: 61.55%;
+      top: 72.2%;
+      width: 15.75%;
+      height: 8.9%;
+      transform: rotate(-2deg);
+    }
+
+    .start-button:hover,
+    .start-button:focus-visible { transform: rotate(-2deg) scale(1.035); }
+
+    .menu-button {
+      top: 39.5%;
+      height: 14%;
+      transform-origin: center;
+    }
+
+    .start-game-button {
+      left: 15%;
+      width: 31%;
+    }
+
+    .exit-button {
+      left: 64%;
+      width: 21%;
+    }
+
+    .menu-button:hover,
+    .menu-button:focus-visible {
+      animation: menu-bounce .45s steps(3);
+      transform: scale(1.05);
+    }
+
+    .confirmation-button {
+      top: 60%;
+      width: 13.5%;
+      height: 7.8%;
+    }
+
+    .yes-button { left: 33.3%; }
+    .no-button { left: 53.2%; }
+
+    .particles {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .particle {
+      position: absolute;
+      width: 5px;
+      height: 5px;
+      background: #fffde2;
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, .16);
+      animation: drift 10s linear infinite, twinkle 2.4s steps(2, end) infinite;
+    }
+
+    .particle:nth-child(1) { left: 16%; top: 28%; animation-delay: -2s; }
+    .particle:nth-child(2) { left: 39%; top: 10%; animation-delay: -7s; }
+    .particle:nth-child(3) { left: 81%; top: 42%; animation-delay: -4s; }
+    .particle:nth-child(4) { left: 10%; top: 57%; animation-delay: -8s; }
+    .particle:nth-child(5) { left: 71%; top: 18%; animation-delay: -1s; }
+
+    .clouds {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .cloud {
+      position: absolute;
+      top: 14%;
+      left: 100%;
+      width: 64px;
+      height: 8px;
+      opacity: .2;
+      background: #fff7e7;
+      box-shadow: 10px -7px #fff7e7, 25px -12px #fff7e7, 41px -6px #fff7e7;
+      animation: cloud-scroll 42s linear infinite;
+    }
+
+    .cloud--two { top: 33%; animation-duration: 58s; animation-delay: -22s; transform: scale(.7); }
+
+    .sprite {
+      position: absolute;
+      z-index: 3;
+      display: none;
+      background: center / contain no-repeat;
+      image-rendering: pixelated;
+      pointer-events: none;
+    }
+
+    .sprite.is-available { display: block; }
+
+    .sprite-sheet {
+      background-position: 0 0;
+      background-size: calc(var(--frames, 1) * 100%) 100%;
+      animation: sprite-frames var(--frame-duration, .16s) steps(var(--frames, 1)) infinite;
+    }
+
+    .sprite--sunflower {
+      left: 8%;
+      top: 55%;
+      width: 12%;
+      height: 29%;
+      background-image: url("sunflower-sprite.png");
+      transform-origin: bottom center;
+      animation: sunflower-sway 3.8s ease-in-out infinite;
+    }
+
+    .sprite--creature {
+      right: 7%;
+      top: 62%;
+      width: 15%;
+      height: 31%;
+      background-image: url("creature-sprite.png");
+      transform-origin: bottom center;
+      animation: creature-breathe 2.2s ease-in-out infinite;
+    }
+
+    .sprite--rabbit {
+      left: 47%;
+      top: 66%;
+      width: 13%;
+      height: 34%;
+      background-image: url("rabbit-sprite.png");
+      transform-origin: bottom center;
+      animation: rabbit-hop 2.4s ease-in-out infinite;
+    }
+
+    .sprite--plants-left,
+    .sprite--plants-right {
+      top: 76%;
+      width: 15%;
+      height: 24%;
+      background-image: url("plants-sprite.png");
+      transform-origin: bottom center;
+      animation: plants-sway 3.6s ease-in-out infinite;
+    }
+
+    .sprite--plants-left { left: 0; }
+    .sprite--plants-right { right: 0; animation-delay: -1.4s; }
+
+    .joystick-motion {
+      position: absolute;
+      left: 19%;
+      top: 28%;
+      width: 12%;
+      height: 20%;
+      z-index: 2;
+      pointer-events: none;
+      animation: joystick-wobble 2.8s ease-in-out infinite;
+    }
+
+    .screen--start .particles .particle {
+      animation-name: start-sparkle, start-rise;
+    }
+
+    .screen--confirmation .particles .particle {
+      animation-name: confirmation-twinkle, confirmation-drift;
+    }
+
+    .screen--page-three .particles .particle {
+      animation-name: menu-twinkle, menu-rise;
+    }
+
+    .sprite--joystick {
+      left: 19%;
+      top: 28%;
+      width: 12%;
+      height: 20%;
+      background-image: url("joystick-sprite.png");
+      animation: joystick-wobble 2.8s ease-in-out infinite;
+    }
+
+    .sprite-sheet.sprite--joystick {
+      animation:
+        sprite-frames 640ms steps(4) infinite,
+        joystick-wobble 2.8s ease-in-out infinite;
+    }
+
+    .sprite-sheet.sprite--rabbit {
+      animation:
+        sprite-frames 960ms steps(6) infinite,
+        rabbit-hop 2.4s ease-in-out infinite;
+    }
+
+    .sprite-sheet.sprite--sunflower,
+    .sprite-sheet.sprite--creature {
+      animation:
+        sprite-frames 640ms steps(4) infinite,
+        sunflower-sway 3.8s ease-in-out infinite;
+    }
+
+    .sprite-sheet.sprite--creature {
+      animation:
+        sprite-frames 640ms steps(4) infinite,
+        creature-breathe 2.2s ease-in-out infinite;
+    }
+
+    .sprite-sheet.sprite--plants-left,
+    .sprite-sheet.sprite--plants-right {
+      animation:
+        sprite-frames 640ms steps(4) infinite,
+        plants-sway 3.6s ease-in-out infinite;
+    }
+
+    @keyframes drift {
+      0% { transform: translate(0, 0); }
+      50% { transform: translate(18px, -12px); }
+      100% { transform: translate(36px, 0); }
+    }
+
+    @keyframes twinkle {
+      50% { opacity: .25; transform: scale(.6); }
+    }
+
+    @keyframes cloud-scroll {
+      from { margin-left: 0; }
+      to { margin-left: -125%; }
+    }
+
+    @keyframes joystick-wobble {
+      0%, 100% { transform: translateY(0) rotate(-2deg); }
+      50% { transform: translateY(-4px) rotate(2deg); }
+    }
+
+    @keyframes sunflower-sway {
+      0%, 100% { transform: rotate(-1deg); }
+      50% { transform: rotate(3deg); }
+    }
+
+    @keyframes creature-breathe {
+      0%, 100% { transform: scaleY(1); }
+      50% { transform: scaleY(1.04) translateY(-2px); }
+    }
+
+    @keyframes sprite-frames {
+      from { background-position: 0 0; }
+      to { background-position: 100% 0; }
+    }
+
+    @keyframes start-sparkle {
+      0%, 100% { opacity: .2; transform: scale(.75); }
+      50% { opacity: 1; transform: scale(1.15); }
+    }
+
+    @keyframes start-rise {
+      0%, 100% { margin-top: 0; }
+      50% { margin-top: -8px; }
+    }
+
+    @keyframes confirmation-twinkle {
+      0%, 100% { opacity: .3; transform: scale(.7); }
+      50% { opacity: 1; transform: scale(1.25); }
+    }
+
+    @keyframes confirmation-drift {
+      0%, 100% { margin-left: 0; }
+      50% { margin-left: 10px; }
+    }
+
+    @keyframes menu-twinkle {
+      0%, 100% { opacity: .25; transform: scale(.75); }
+      50% { opacity: 1; transform: scale(1.2); }
+    }
+
+    @keyframes menu-rise {
+      0%, 100% { margin-top: 0; }
+      50% { margin-top: -5px; }
+    }
+
+    @keyframes menu-bounce {
+      50% { transform: scale(1.05) translateY(-3px); }
+    }
+
+    @keyframes rabbit-hop {
+      0%, 100% { transform: translateY(0) scaleY(1); }
+      50% { transform: translateY(-4px) scaleY(1.02); }
+    }
+
+    @keyframes plants-sway {
+      0%, 100% { transform: rotate(-1deg); }
+      50% { transform: rotate(2deg); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app" id="app" aria-label="Retro pixel-art game">
+    <!--
+      Optional animation sheets use one horizontal row of equal-sized transparent
+      frames. Add the named PNGs beside this file to animate isolated characters
+      without covering the original background artwork.
+    -->
+    <section class="screen screen--opening is-active" id="screen-opening" aria-label="Warm-up introduction">
+      <div class="opening-sparkles" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+      <div class="opening-content">
+        <p class="opening-message">Before we start, let’s get everyone energized and ready! Please stand up, and follow the movements in the video</p>
+        <iframe class="opening-video" width="560" height="315" src="https://www.youtube.com/embed/gQT0C2cxmhw" frameborder="0" allowfullscreen title="Warm-up video"></iframe>
+      </div>
+      <button class="opening-next" id="opening-next" type="button">Continue</button>
+    </section>
+
+    <section class="screen screen--start" id="screen-1" aria-label="Start screen">
+      <div class="fallback">Add <strong>screen1.png</strong> beside this file.</div>
+      <div class="clouds" aria-hidden="true">
+        <i class="cloud"></i>
+        <i class="cloud cloud--two"></i>
+      </div>
+      <div class="particles" aria-hidden="true">
+      </div>
+      <div class="sprite sprite-sheet sprite--sunflower" data-sprite="sunflower-sprite.png" data-frames="4" aria-hidden="true"></div>
+      <div class="sprite sprite-sheet sprite--creature" data-sprite="creature-sprite.png" data-frames="4" aria-hidden="true"></div>
+      <button class="overlay-button start-button" id="start-button" type="button" aria-label="Start game">
+      </button>
+    </section>
+
+    <section class="screen screen--confirmation" id="screen-2" aria-label="Confirmation screen" aria-hidden="true">
+      <div class="fallback">Add <strong>screen2.png</strong> beside this file.</div>
+      <div class="clouds" aria-hidden="true">
+        <i class="cloud"></i>
+        <i class="cloud cloud--two"></i>
+      </div>
+      <div class="particles" aria-hidden="true">
+      </div>
+      <div class="sprite sprite-sheet sprite--joystick" data-sprite="joystick-sprite.png" data-frames="4" aria-hidden="true"></div>
+      <div class="joystick-motion" aria-hidden="true">
+      </div>
+      <button class="overlay-button confirmation-button yes-button" id="yes-button" type="button" aria-label="Yes">
+      </button>
+      <button class="overlay-button confirmation-button no-button" id="no-button" type="button" aria-label="No">
+      </button>
+    </section>
+
+    <section class="screen screen--page-three" id="screen-3" aria-label="Page 3 placeholder" aria-hidden="true">
+      <div class="fallback">Add <strong>page3.png</strong> beside this file.</div>
+      <div class="clouds" aria-hidden="true">
+        <i class="cloud"></i>
+        <i class="cloud cloud--two"></i>
+      </div>
+      <div class="particles" aria-hidden="true"></div>
+      <div class="sprite sprite-sheet sprite--rabbit" data-sprite="rabbit-sprite.png" data-frames="6" aria-hidden="true"></div>
+      <div class="sprite sprite-sheet sprite--plants-left" data-sprite="plants-sprite.png" data-frames="4" aria-hidden="true"></div>
+      <div class="sprite sprite-sheet sprite--plants-right" data-sprite="plants-sprite.png" data-frames="4" aria-hidden="true"></div>
+      <button class="overlay-button menu-button start-game-button" id="start-game-button" type="button" aria-label="Start game">
+      </button>
+      <button class="overlay-button menu-button exit-button" id="exit-button" type="button" aria-label="Exit to confirmation">
+      </button>
+    </section>
+
+    <section class="screen screen--page-four" id="screen-4" aria-label="Welcome presentation" aria-hidden="true">
+      <div class="page-four-scene">
+        <div class="page-four-sparkles" aria-hidden="true">
+          <i></i><i></i><i></i><i></i>
+        </div>
+        <div class="welcome-rabbit" aria-hidden="true">
+          <i class="rabbit-ear rabbit-ear--left"></i>
+          <i class="rabbit-ear rabbit-ear--right"></i>
+          <i class="rabbit-body"></i>
+          <i class="rabbit-face">
+            <b class="rabbit-eye rabbit-eye--left"></b>
+            <b class="rabbit-eye rabbit-eye--right"></b>
+            <b class="rabbit-nose"></b>
+            <b class="rabbit-mouth"></b>
+          </i>
+          <i class="rabbit-arm rabbit-arm--left"></i>
+          <i class="rabbit-arm rabbit-arm--right"></i>
+          <i class="rabbit-leg rabbit-leg--left"></i>
+          <i class="rabbit-leg rabbit-leg--right"></i>
+        </div>
+        <i class="panel-accent panel-accent--top" aria-hidden="true"></i>
+        <i class="panel-accent panel-accent--bottom" aria-hidden="true"></i>
+        <article class="welcome-panel">
+          <p class="welcome-text">
+            <span class="welcome-line">Hello, everyone! Welcome to our</span>
+            <span class="welcome-line">energizer! Before we begin, we hope</span>
+            <span class="welcome-line">everyone is ready to participate and</span>
+            <span class="welcome-line">have some fun. So, is everyone</span>
+            <span class="welcome-line">ready? Let’s get started!</span>
+          </p>
+        </article>
+        <nav class="page-four-nav" aria-label="Presentation navigation">
+          <button id="page-four-back" type="button">Back</button>
+          <button id="page-four-continue" type="button">Continue</button>
+        </nav>
+      </div>
+    </section>
+
+    <section class="screen screen--page-five" id="screen-5" aria-label="Rules" aria-hidden="true">
+      <div class="page-five-scene">
+        <div class="page-five-sparkles" aria-hidden="true">
+          <i></i><i></i><i></i><i></i><i></i>
+        </div>
+        <div class="cat-container" aria-hidden="true">
+          <img src="pirate-cat.png" alt="Pirate Cat" id="cat-mascot">
+        </div>
+        <article class="rules-sign">
+          <h2>Rules</h2>
+        </article>
+        <button class="page-five-back" id="page-five-back" type="button">Back</button>
+        <button class="page-five-next" id="page-five-next" type="button">Continue</button>
+      </div>
+    </section>
+
+    <section class="screen screen--page-six" id="screen-6" aria-label="Rules of the game" aria-hidden="true">
+      <div class="page-six-scene">
+        <div class="page-six-sparkles" aria-hidden="true">
+          <i></i><i></i><i></i><i></i><i></i>
+        </div>
+        <div class="page-six-signal" aria-hidden="true">
+          <i class="page-six-light page-six-light--red"></i>
+          <i class="page-six-light page-six-light--yellow"></i>
+          <i class="page-six-light page-six-light--green"></i>
+        </div>
+        <article class="page-six-card">
+          <h2 class="page-six-title">Rules of the Game: Red Light, Green Light</h2>
+          <ol class="page-six-rules">
+            <li class="page-six-rule"><span class="page-six-number">1.</span> Everyone must start in a standing position.</li>
+            <li class="page-six-rule"><span class="page-six-number">2.</span> A random color, either <strong class="page-six-red">RED LIGHT</strong> or <strong class="page-six-green">GREEN LIGHT</strong>, will appear on the screen.</li>
+            <li class="page-six-rule"><span class="page-six-number">3.</span> When <strong class="page-six-red">RED LIGHT</strong> appears, everyone must sit down immediately.</li>
+            <li class="page-six-rule"><span class="page-six-number">4.</span> When <strong class="page-six-green">GREEN LIGHT</strong> appears, everyone must remain standing.</li>
+            <li class="page-six-rule"><span class="page-six-number">5.</span> The last person to follow the instruction or anyone who makes the wrong move will be chosen to answer a question.</li>
+            <li class="page-six-rule">The facilitator will ask the chosen participant a question related to our NSTP topics.</li>
+            <li class="page-six-rule"><span class="page-six-number">6.</span> After the question is answered, the game continues with another random color.</li>
+          </ol>
+          <p class="page-six-footer">Remember to pay attention, react quickly, and follow the instructions carefully. Good luck, everyone!</p>
+        </article>
+        <div class="page-six-grass" aria-hidden="true"></div>
+        <nav class="page-six-nav" aria-label="Rules navigation">
+          <button id="page-six-back" type="button">Back</button>
+          <button id="page-six-continue" type="button">Continue</button>
+        </nav>
+      </div>
+    </section>
+
+    <section class="screen screen--page-seven" id="screen-7" aria-label="Let's begin" aria-hidden="true">
+      <div class="page-seven-scene">
+        <div class="page-seven-cloud page-seven-cloud--left" aria-hidden="true"></div>
+        <div class="page-seven-cloud page-seven-cloud--right" aria-hidden="true"></div>
+        <div class="page-seven-stars" aria-hidden="true">
+          <i></i><i></i><i></i><i></i><i></i><i></i>
+        </div>
+        <h2 class="page-seven-title"><span>Let's</span><span>begin!</span></h2>
+        <div class="page-seven-mascot">
+          <img src="pink-mascot.svg" alt="Pink cloud creature" class="pink-creature">
+        </div>
+        <div class="page-seven-grass" aria-hidden="true"></div>
+        <div class="page-seven-ground" aria-hidden="true"></div>
+        <nav class="page-seven-nav" aria-label="Let's begin navigation">
+          <button id="page-seven-back" type="button">Back</button>
+          <button id="page-seven-continue" type="button">Continue</button>
+        </nav>
+      </div>
+    </section>
+
+    <section class="screen screen--page-eight" id="screen-8" aria-label="Main gameplay" aria-hidden="true">
+      <div class="page-eight-scene">
+        <div class="page-eight-cloud page-eight-cloud--left" aria-hidden="true"></div>
+        <div class="page-eight-cloud page-eight-cloud--right" aria-hidden="true"></div>
+        <div class="page-eight-stars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="page-eight-ui">
+          <div class="page-eight-orb" id="page-eight-orb" aria-label="Neutral light"></div>
+          <p class="page-eight-label" id="page-eight-label"></p>
+          <button class="page-eight-button page-eight-continue" id="page-eight-continue" type="button">Continue</button>
+        </div>
+        <div class="page-eight-grass" aria-hidden="true"></div>
+        <div class="page-eight-ground" aria-hidden="true"></div>
+
+        <div class="page-eight-modal" id="page-eight-action-modal" hidden>
+          <h2>What would you like to do?</h2>
+          <div class="page-eight-actions">
+            <button class="page-eight-button" id="page-eight-question" type="button">Question</button>
+            <button class="page-eight-button" id="page-eight-restart" type="button">Start Again</button>
+            <button class="page-eight-button" id="page-eight-stop" type="button">Stop</button>
+          </div>
+        </div>
+
+        <div class="page-eight-modal" id="page-eight-quiz-modal" hidden>
+          <h2>Quick Question!</h2>
+          <p class="page-eight-quiz-question" id="page-eight-question-text"></p>
+          <div class="page-eight-question-modes" id="page-eight-question-modes">
+            <button class="page-eight-button" id="page-eight-show-choices" type="button">Show Choices (Multiple Choice)</button>
+            <button class="page-eight-button" id="page-eight-manual-judge" type="button">Judge Right / Wrong Manually</button>
+          </div>
+          <div class="page-eight-quiz-options" id="page-eight-options"></div>
+          <div class="page-eight-manual-actions" id="page-eight-manual-actions" hidden>
+            <button class="page-eight-button" id="page-eight-manual-correct" type="button">Correct ✅</button>
+            <button class="page-eight-button" id="page-eight-manual-wrong" type="button">Wrong ❌</button>
+          </div>
+          <p class="page-eight-feedback" id="page-eight-feedback" aria-live="polite"></p>
+          <div class="page-eight-quiz-nav">
+            <button class="page-eight-button" id="page-eight-quiz-restart" type="button">Start Again</button>
+            <button class="page-eight-button" id="page-eight-quiz-stop" type="button">Stop</button>
+          </div>
+        </div>
+
+        <div class="page-eight-modal" id="page-eight-thanks" hidden>
+          <h2>Thank You!</h2>
+          <p>Great job participating. See you next time!</p>
+          <button class="page-eight-button" id="page-eight-thanks-restart" type="button">Start Again</button>
+        </div>
+
+        <nav class="page-eight-nav" aria-label="Gameplay navigation">
+          <button class="page-eight-button" id="page-eight-back" type="button">Back</button>
+        </nav>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    const app = document.querySelector("#app");
+    const screenOne = document.querySelector("#screen-1");
+    const screenOpening = document.querySelector("#screen-opening");
+    const screenTwo = document.querySelector("#screen-2");
+    const screenThree = document.querySelector("#screen-3");
+    const screenFour = document.querySelector("#screen-4");
+    const screenFive = document.querySelector("#screen-5");
+    const screenSix = document.querySelector("#screen-6");
+    const screenSeven = document.querySelector("#screen-7");
+    const screenEight = document.querySelector("#screen-8");
+    const startButton = document.querySelector("#start-button");
+    const yesButton = document.querySelector("#yes-button");
+    const noButton = document.querySelector("#no-button");
+    const startGameButton = document.querySelector("#start-game-button");
+    const exitButton = document.querySelector("#exit-button");
+    const pageFourBack = document.querySelector("#page-four-back");
+    const pageFourContinue = document.querySelector("#page-four-continue");
+    const pageFiveBack = document.querySelector("#page-five-back");
+    const pageFiveNext = document.querySelector("#page-five-next");
+    const pageSixBack = document.querySelector("#page-six-back");
+    const pageSixContinue = document.querySelector("#page-six-continue");
+    const pageSevenBack = document.querySelector("#page-seven-back");
+    const pageSevenContinue = document.querySelector("#page-seven-continue");
+    const pageEightOrb = document.querySelector("#page-eight-orb");
+    const pageEightLabel = document.querySelector("#page-eight-label");
+    const pageEightContinue = document.querySelector("#page-eight-continue");
+    const pageEightActionModal = document.querySelector("#page-eight-action-modal");
+    const pageEightQuizModal = document.querySelector("#page-eight-quiz-modal");
+    const pageEightThanks = document.querySelector("#page-eight-thanks");
+    const pageEightOptions = document.querySelector("#page-eight-options");
+    const pageEightQuestionText = document.querySelector("#page-eight-question-text");
+    const pageEightQuestionModes = document.querySelector("#page-eight-question-modes");
+    const pageEightShowChoices = document.querySelector("#page-eight-show-choices");
+    const pageEightManualJudge = document.querySelector("#page-eight-manual-judge");
+    const pageEightManualActions = document.querySelector("#page-eight-manual-actions");
+    const pageEightManualCorrect = document.querySelector("#page-eight-manual-correct");
+    const pageEightManualWrong = document.querySelector("#page-eight-manual-wrong");
+    const pageEightFeedback = document.querySelector("#page-eight-feedback");
+    const pageEightQuestion = document.querySelector("#page-eight-question");
+    const pageEightRestart = document.querySelector("#page-eight-restart");
+    const pageEightStop = document.querySelector("#page-eight-stop");
+    const pageEightQuizRestart = document.querySelector("#page-eight-quiz-restart");
+    const pageEightQuizStop = document.querySelector("#page-eight-quiz-stop");
+    const pageEightThanksRestart = document.querySelector("#page-eight-thanks-restart");
+    const pageEightBack = document.querySelector("#page-eight-back");
+    const openingNext = document.querySelector("#opening-next");
+    let pageEightTimer;
+    let pageEightFlashTimer;
+    let pageEightAudioTimer;
+    let pageEightAudioContext;
+    let pageEightRevealAudioTimers = [];
+    let remainingQuestions;
+    let currentQuestion;
+
+    const pageEightQuestions = [
+      { question: "How many stars are on the Philippine flag?", options: ["A. One", "B. Two", "C. Three", "D. Four"], answer: 2 },
+      { question: "What is the capital city of the Philippines?", options: ["A. Cebu", "B. Manila", "C. Davao", "D. Baguio"], answer: 1 },
+      { question: "How many colors are on the Philippine flag?", options: ["A. Two", "B. Three", "C. Four", "D. Five"], answer: 2 },
+      { question: "What do the letters NSTP stand for?", options: ["A. National Service Training Program", "B. National Safety Team Project", "C. New Student Training Plan", "D. National School Teaching Program"], answer: 0 },
+      { question: "What is the largest island in the Philippines?", options: ["A. Luzon", "B. Panay", "C. Palawan", "D. Bohol"], answer: 0 },
+      { question: "Which Philippine holiday honors national hero Jose Rizal?", options: ["A. Araw ng Kagitingan", "B. Rizal Day", "C. Independence Day", "D. Labor Day"], answer: 1 },
+      { question: "What is the national flower of the Philippines?", options: ["A. Rose", "B. Sampaguita", "C. Sunflower", "D. Orchid"], answer: 1 },
+      { question: "How many main island groups does the Philippines have?", options: ["A. Two", "B. Three", "C. Four", "D. Five"], answer: 1 },
+      { question: "What is the national language of the Philippines?", options: ["A. Filipino", "B. Spanish", "C. English", "D. Cebuano"], answer: 0 },
+      { question: "Which ocean surrounds the Philippines to the east?", options: ["A. Atlantic Ocean", "B. Pacific Ocean", "C. Indian Ocean", "D. Arctic Ocean"], answer: 1 },
+      { question: "What is the currency of the Philippines?", options: ["A. Peso", "B. Yen", "C. Ringgit", "D. Baht"], answer: 0 },
+      { question: "How many sides does a triangle have?", options: ["A. Two", "B. Three", "C. Four", "D. Five"], answer: 1 },
+      { question: "Which planet is known as the Red Planet?", options: ["A. Venus", "B. Mars", "C. Jupiter", "D. Saturn"], answer: 1 },
+      { question: "How many days are in one week?", options: ["A. Five", "B. Six", "C. Seven", "D. Eight"], answer: 2 },
+      { question: "What do plants need from the sun to grow?", options: ["A. Sunlight", "B. Sand", "C. Plastic", "D. Metal"], answer: 0 },
+      { question: "What is the opposite of 'green light' in this game?", options: ["A. Blue light", "B. Yellow light", "C. Red light", "D. White light"], answer: 2 },
+      { question: "How many legs does a spider have?", options: ["A. Six", "B. Eight", "C. Ten", "D. Twelve"], answer: 1 },
+      { question: "Which animal is known as man's best friend?", options: ["A. Cat", "B. Dog", "C. Horse", "D. Rabbit"], answer: 1 },
+      { question: "What color do you get by mixing red and white?", options: ["A. Pink", "B. Green", "C. Brown", "D. Purple"], answer: 0 },
+      { question: "How many months are in one year?", options: ["A. Ten", "B. Eleven", "C. Twelve", "D. Thirteen"], answer: 2 },
+      { question: "Which sense do we use with our ears?", options: ["A. Sight", "B. Taste", "C. Hearing", "D. Touch"], answer: 2 },
+      { question: "What is frozen water called?", options: ["A. Steam", "B. Ice", "C. Rain", "D. Fog"], answer: 1 },
+      { question: "Which star is closest to Earth?", options: ["A. The Sun", "B. Sirius", "C. Polaris", "D. Vega"], answer: 0 },
+      { question: "How many wheels does a bicycle have?", options: ["A. One", "B. Two", "C. Three", "D. Four"], answer: 1 },
+      { question: "Which shape has four equal sides?", options: ["A. Circle", "B. Triangle", "C. Square", "D. Oval"], answer: 2 },
+      { question: "What do bees make?", options: ["A. Milk", "B. Honey", "C. Bread", "D. Juice"], answer: 1 },
+      { question: "Which season is usually the coldest?", options: ["A. Summer", "B. Spring", "C. Autumn", "D. Winter"], answer: 3 },
+      { question: "What gas do people need to breathe?", options: ["A. Oxygen", "B. Helium", "C. Smoke", "D. Steam"], answer: 0 },
+      { question: "Which fruit is yellow and curved?", options: ["A. Apple", "B. Banana", "C. Grape", "D. Orange"], answer: 1 },
+      { question: "How many hours are in one day?", options: ["A. Twelve", "B. Eighteen", "C. Twenty-four", "D. Thirty"], answer: 2 }
+    ];
+
+    function checkAsset(path, screen) {
+      const asset = new Image();
+      asset.onload = () => screen.classList.remove("screen--missing");
+      asset.onerror = () => screen.classList.add("screen--missing");
+      asset.src = path;
+    }
+
+    function createParticles(container, count = 18) {
+      for (let index = 0; index < count; index += 1) {
+        const particle = document.createElement("i");
+        particle.className = "particle";
+        particle.style.left = `${Math.random() * 96 + 2}%`;
+        particle.style.top = `${Math.random() * 72 + 5}%`;
+        particle.style.animationDelay = `${-Math.random() * 10}s, ${-Math.random() * 2.4}s`;
+        particle.style.animationDuration = `${8 + Math.random() * 8}s, ${1.6 + Math.random() * 2}s`;
+        particle.style.width = `${3 + Math.floor(Math.random() * 4)}px`;
+        particle.style.height = particle.style.width;
+        container.appendChild(particle);
+      }
+    }
+
+    function enableOptionalSprite(sprite) {
+      const asset = new Image();
+      asset.onload = () => {
+        sprite.style.setProperty("--frames", sprite.dataset.frames || "1");
+        sprite.classList.add("is-available");
+      };
+      asset.src = sprite.dataset.sprite;
+    }
+
+    checkAsset("screen1.png", screenOne);
+    checkAsset("screen2.png", screenTwo);
+    checkAsset("page3.png", screenThree);
+    document.querySelectorAll("[data-sprite]").forEach(enableOptionalSprite);
+    document.querySelectorAll(".particles").forEach((container) => createParticles(container));
+
+    function clearPageEightTimers() {
+      window.clearTimeout(pageEightTimer);
+      window.clearInterval(pageEightFlashTimer);
+      window.clearTimeout(pageEightAudioTimer);
+      stopPageEightSound();
+      pageEightTimer = undefined;
+      pageEightFlashTimer = undefined;
+      pageEightAudioTimer = undefined;
+    }
+
+    function getPageEightAudioContext() {
+      if (!pageEightAudioContext) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return null;
+        pageEightAudioContext = new AudioContextClass();
+      }
+      if (pageEightAudioContext.state === "suspended") pageEightAudioContext.resume();
+      return pageEightAudioContext;
+    }
+
+    function playPageEightTone(frequency, duration, type = "square", volume = .045) {
+      const context = getPageEightAudioContext();
+      if (!context) return;
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      const startTime = context.currentTime;
+      oscillator.type = type;
+      oscillator.frequency.setValueAtTime(frequency, startTime);
+      gain.gain.setValueAtTime(.0001, startTime);
+      gain.gain.linearRampToValueAtTime(volume, startTime + .008);
+      gain.gain.exponentialRampToValueAtTime(.001, startTime + duration);
+      oscillator.connect(gain);
+      gain.connect(context.destination);
+      oscillator.start();
+      oscillator.stop(startTime + duration);
+    }
+
+    function startPageEightTensionSound() {
+      let step = 0;
+      const tick = () => {
+        const arcadeNotes = [220, 277, 330, 392, 440, 523];
+        const note = arcadeNotes[step % arcadeNotes.length];
+        playPageEightTone(note, .075, "square", .026);
+        if (step % 3 === 2) {
+          playPageEightTone(note * 2, .045, "triangle", .012);
+        }
+        step += 1;
+        pageEightAudioTimer = window.setTimeout(tick, 105 + Math.random() * 115);
+      };
+      tick();
+    }
+
+    function stopPageEightSound() {
+      window.clearTimeout(pageEightAudioTimer);
+      pageEightAudioTimer = undefined;
+      pageEightRevealAudioTimers.forEach((timer) => window.clearTimeout(timer));
+      pageEightRevealAudioTimers = [];
+    }
+
+    function playPageEightRevealSound(color) {
+      const scheduleTone = (frequency, duration, type, volume, delay) => {
+        const timer = window.setTimeout(() => {
+          playPageEightTone(frequency, duration, type, volume);
+        }, delay);
+        pageEightRevealAudioTimers.push(timer);
+      };
+      if (color === "red") {
+        playPageEightTone(130, .16, "square", .05);
+        scheduleTone(92, .24, "sawtooth", .045, 95);
+        scheduleTone(58, .34, "square", .035, 185);
+        return;
+      }
+      playPageEightTone(523, .1, "square", .04);
+      scheduleTone(784, .12, "square", .038, 90);
+      scheduleTone(1047, .22, "triangle", .032, 185);
+    }
+
+    function hidePageEightModals() {
+      pageEightActionModal.hidden = true;
+      pageEightQuizModal.hidden = true;
+      pageEightThanks.hidden = true;
+    }
+
+    function resetPageEightLight() {
+      clearPageEightTimers();
+      hidePageEightModals();
+      pageEightOrb.className = "page-eight-orb";
+      pageEightOrb.setAttribute("aria-label", "Neutral light");
+      pageEightLabel.textContent = "GET READY";
+      pageEightLabel.classList.add("is-visible");
+      pageEightContinue.classList.remove("is-visible");
+      pageEightTimer = window.setTimeout(() => {
+        pageEightLabel.textContent = "";
+        pageEightLabel.classList.remove("is-visible");
+        startPageEightTensionSound();
+        pageEightOrb.classList.add("is-flashing", "is-red");
+        let flashColor = "red";
+        const showColor = (color) => {
+          pageEightOrb.classList.remove("is-red", "is-green", "is-yellow");
+          pageEightOrb.classList.add(`is-${color}`);
+        };
+        const scheduleFlash = () => {
+          const toggleDelay = Math.random() < .3
+            ? 800 + Math.random() * 200
+            : 50 + Math.random() * 350;
+          pageEightFlashTimer = window.setTimeout(() => {
+            const roll = Math.random();
+            if (roll < .28) {
+              pageEightOrb.classList.remove("is-red", "is-green");
+              pageEightOrb.classList.add("is-yellow");
+              pageEightFlashTimer = window.setTimeout(() => {
+                flashColor = flashColor === "red" ? "green" : "red";
+                showColor(flashColor);
+                scheduleFlash();
+              }, 50 + Math.random() * 50);
+              return;
+            }
+            if (roll < .48) {
+              const repeatedColor = flashColor;
+              pageEightOrb.classList.remove("is-red", "is-green", "is-yellow");
+              pageEightFlashTimer = window.setTimeout(() => {
+                showColor(repeatedColor);
+                pageEightFlashTimer = window.setTimeout(() => {
+                  flashColor = repeatedColor === "red" ? "green" : "red";
+                  showColor(flashColor);
+                  scheduleFlash();
+                }, 50 + Math.random() * 30);
+              }, 50 + Math.random() * 30);
+              return;
+            }
+            flashColor = flashColor === "red" ? "green" : "red";
+            showColor(flashColor);
+            scheduleFlash();
+          }, toggleDelay);
+        };
+        scheduleFlash();
+        pageEightTimer = window.setTimeout(() => {
+          window.clearTimeout(pageEightFlashTimer);
+          pageEightFlashTimer = undefined;
+          pageEightOrb.classList.remove("is-flashing", "is-red", "is-green", "is-yellow");
+          const color = Math.random() < .5 ? "red" : "green";
+          pageEightOrb.classList.add(`is-${color}`);
+          pageEightOrb.setAttribute("aria-label", `${color} light`);
+          pageEightLabel.textContent = `${color.toUpperCase()} LIGHT`;
+          pageEightLabel.classList.add("is-visible");
+          pageEightContinue.classList.add("is-visible");
+          stopPageEightSound();
+          playPageEightRevealSound(color);
+          pageEightContinue.focus();
+        }, 3000 + Math.random() * 7000);
+      }, 1000);
+    }
+
+    function startPageEight() {
+      if (!remainingQuestions) remainingQuestions = [...pageEightQuestions];
+      resetPageEightLight();
+    }
+
+    function showPageEightThanks() {
+      clearPageEightTimers();
+      pageEightActionModal.hidden = true;
+      pageEightQuizModal.hidden = true;
+      pageEightThanks.hidden = false;
+      pageEightThanksRestart.focus();
+    }
+
+    function showPageEightQuiz() {
+      clearPageEightTimers();
+      pageEightActionModal.hidden = true;
+      pageEightQuizModal.hidden = false;
+      if (!remainingQuestions) remainingQuestions = [...pageEightQuestions];
+      pageEightFeedback.textContent = "";
+      pageEightFeedback.classList.remove("is-wrong");
+      pageEightOptions.replaceChildren();
+      pageEightQuestionModes.hidden = false;
+      pageEightManualActions.hidden = true;
+      if (remainingQuestions.length === 0) {
+        pageEightQuestionText.textContent = "You answered every question in this session!";
+        pageEightFeedback.textContent = "Choose Start Again to play another light cycle.";
+        return;
+      }
+      currentQuestion = remainingQuestions.splice(Math.floor(Math.random() * remainingQuestions.length), 1)[0];
+      pageEightQuestionText.textContent = currentQuestion.question;
+    }
+
+    function showPageEightChoices() {
+      pageEightQuestionModes.hidden = true;
+      pageEightManualActions.hidden = true;
+      pageEightOptions.replaceChildren();
+      currentQuestion.options.forEach((option, index) => {
+        const button = document.createElement("button");
+        button.className = "page-eight-button";
+        button.type = "button";
+        button.textContent = option;
+        button.addEventListener("click", () => {
+          pageEightOptions.querySelectorAll("button").forEach((choice) => {
+            choice.disabled = true;
+          });
+          if (index === currentQuestion.answer) {
+            pageEightFeedback.textContent = "Correct! Great job!";
+            pageEightFeedback.classList.remove("is-wrong");
+          } else {
+            pageEightFeedback.textContent = `Incorrect! The correct answer is: ${currentQuestion.options[currentQuestion.answer]}`;
+            pageEightFeedback.classList.add("is-wrong");
+          }
+        });
+        pageEightOptions.append(button);
+      });
+    }
+
+    function showPageEightManualJudge() {
+      pageEightQuestionModes.hidden = true;
+      pageEightOptions.replaceChildren();
+      pageEightManualActions.hidden = false;
+      pageEightManualCorrect.disabled = false;
+      pageEightManualWrong.disabled = false;
+    }
+
+    function finishPageEightManualAnswer(isCorrect) {
+      pageEightManualCorrect.disabled = true;
+      pageEightManualWrong.disabled = true;
+      pageEightFeedback.classList.toggle("is-wrong", !isCorrect);
+      pageEightFeedback.textContent = isCorrect
+        ? "Correct! Great job!"
+        : `Incorrect! The correct answer is: ${currentQuestion.options[currentQuestion.answer]}`;
+    }
+
+    function showScreen(nextScreen, focusTarget) {
+      if (nextScreen !== screenEight) clearPageEightTimers();
+      [screenOpening, screenOne, screenTwo, screenThree, screenFour, screenFive, screenSix, screenSeven, screenEight].forEach((screen) => {
+        const isNext = screen === nextScreen;
+        screen.classList.toggle("is-active", isNext);
+        screen.setAttribute("aria-hidden", String(!isNext));
+      });
+      if (focusTarget) focusTarget.focus();
+    }
+
+    function showConfirmationScreen() {
+      showScreen(screenTwo, yesButton);
+    }
+
+    function returnToStartScreen() {
+      showScreen(screenOne, startButton);
+    }
+
+    function handleYesClick() {
+      goToPage3();
+    }
+
+    function handleNoClick() {
+      returnToStartScreen();
+    }
+
+    function goToPage3() {
+      showScreen(screenThree);
+      // Replace this placeholder with your Page 3 asset and game logic.
+    }
+
+    function goToPage4() {
+      showScreen(screenFour);
+    }
+
+    screenOne.addEventListener("click", (event) => {
+      if (event.target !== startButton) showConfirmationScreen();
+    });
+    startButton.addEventListener("click", showConfirmationScreen);
+    yesButton.addEventListener("click", handleYesClick);
+    noButton.addEventListener("click", handleNoClick);
+    startGameButton.addEventListener("click", goToPage4);
+    exitButton.addEventListener("click", () => showScreen(screenTwo, yesButton));
+    pageFourBack.addEventListener("click", () => showScreen(screenThree, startGameButton));
+    pageFourContinue.addEventListener("click", () => showScreen(screenFive));
+    pageFiveBack.addEventListener("click", () => showScreen(screenFour, pageFourContinue));
+    pageFiveNext.addEventListener("click", () => showScreen(screenSix, pageSixBack));
+    pageSixBack.addEventListener("click", () => showScreen(screenFive, pageFiveNext));
+    pageSixContinue.addEventListener("click", () => showScreen(screenSeven));
+    pageSevenBack.addEventListener("click", () => showScreen(screenSix, pageSixContinue));
+    pageSevenContinue.addEventListener("click", () => {
+      showScreen(screenEight);
+      startPageEight();
+    });
+    pageEightBack.addEventListener("click", () => showScreen(screenSeven, pageSevenContinue));
+    openingNext.addEventListener("click", () => showScreen(screenOne, startButton));
+    pageEightQuestion.addEventListener("click", showPageEightQuiz);
+    pageEightShowChoices.addEventListener("click", showPageEightChoices);
+    pageEightManualJudge.addEventListener("click", showPageEightManualJudge);
+    pageEightManualCorrect.addEventListener("click", () => finishPageEightManualAnswer(true));
+    pageEightManualWrong.addEventListener("click", () => finishPageEightManualAnswer(false));
+    pageEightContinue.addEventListener("click", () => {
+      pageEightContinue.classList.remove("is-visible");
+      pageEightActionModal.hidden = false;
+      pageEightQuestion.focus();
+    });
+    pageEightRestart.addEventListener("click", resetPageEightLight);
+    pageEightStop.addEventListener("click", showPageEightThanks);
+    pageEightQuizRestart.addEventListener("click", resetPageEightLight);
+    pageEightQuizStop.addEventListener("click", showPageEightThanks);
+    pageEightThanksRestart.addEventListener("click", resetPageEightLight);
+  </script>
+</body>
+</html>
